@@ -83,3 +83,19 @@ func TestCountRollsWithTargetSum(t *testing.T) {
 		}
 	}
 }
+
+func TestCountRollsGreaterOrEqualToTargetSum(t *testing.T) {
+	cases := []struct {
+		p, n, s, expected uint64
+	}{
+		{12, 2, 6, 1},
+		{11, 2, 6, 3},
+		{10, 2, 6, 6},
+	}
+	for _, c := range cases {
+		got := CountRollsGreaterOrEqualToTargetSum(c.n, c.s, c.p)
+		if got != c.expected {
+			t.Errorf("CountRollsGreaterOrEqualToTargetSum(%d, %d, %d) == %d, want %d", c.n, c.s, c.p, got, c.expected)
+		}
+	}
+}

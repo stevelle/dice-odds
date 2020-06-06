@@ -22,6 +22,16 @@ func main() {
 	fmt.Println("What are the odds?")
 }
 
+func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) uint64 {
+	var total uint64
+	// fmt.Printf("from %d to %d\n", p, s*n)
+	for i := p; i <= s*n; i++ {
+		// fmt.Printf("CountRollsWithTargetSum(%d, %d, %d)\n", n, s, i)
+		total += CountRollsWithTargetSum(n, s, i)
+	}
+	return total
+}
+
 // Probability P of getting a sum p by rolling n dice each with s sides
 //   is expressed by the formula
 //   P(p,n,s) = (1/math.Pow(s, n)) * sum[k: 0, math.Floor((p-n)/s)](math.Pow(-1, k) * Choose(n, k) * Choose((p - s * k - 1), (p - s * k - n) ) )
