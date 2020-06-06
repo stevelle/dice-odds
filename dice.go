@@ -5,6 +5,11 @@ import (
 	"math/big"
 )
 
+// Combinatorics, which are featured prominently in probablility in dice
+// quickly results in very large numbers, due to the presence of
+// factorials in this field of math.
+// For this reason we are performing many calculations using math/big
+
 // Common value used in comparisons
 var zero = big.NewInt(0)
 var one = big.NewInt(1)
@@ -20,16 +25,20 @@ func main() {
 // Probability P of getting a sum p by rolling n dice each with s sides
 //   is expressed by the formula
 //   P(p,n,s) = (1/math.Pow(s, n)) * sum[k: 0, math.Floor((p-n)/s)](math.Pow(-1, k) * Choose(n, k) * Choose((p - s * k - 1), (p - s * k - n) ) )
+//     p = "points" or the target sum of the result of all dice rolled
+//     n = number of dice to roll
+//     s = sides on each of n dice (all dice assumed to have the same number of sides)
 //     with credit to https://www.lucamoroni.it/the-dice-roll-sum-problem/
+// This calculation is broken down into subcalculations by functions defined below to answer the questions proposed
 
 // Count the number of ways to get target sum from a given number of dice, each with given sides
 //   expressed by sum[k: 0, math.Floor((p-n)/s)](math.Pow(-1, k) * Choose(n, k) * Choose((p - s * k - 1), (p - s * k - n) ))
 //   p becomes target
 func CountRollsWithTargetSum(n uint64, s uint64, p uint64) uint64 {
 	var total uint64
-	k := (p-n) / s
+	k := (p - n) / s
 	for i := uint64(0); i <= k; i++ {
-                // we just add or subtract below since math.Pow(-1, k) is always 1 or -1
+		// we just add or subtract below since math.Pow(-1, k) is always 1 or -1
 		is_add := shouldAdd(i)
 		first := Choose(n, i)
 		second := Choose(p-s*i-1, p-s*i-n)
