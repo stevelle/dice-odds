@@ -41,28 +41,33 @@ func TestChoose(t *testing.T) {
 		{30, 21, 14307150},
 	}
 	for _, c := range cases {
-		got := Choose(c.n, c.k)
+		got, _ := Choose(c.n, c.k)
 		if got != c.expected {
 			t.Errorf("Choose(%d, %d) == %d, want %d", c.n, c.k, got, c.expected)
 		}
 	}
 }
 
-func TestMultiChoose(t *testing.T) {
+func TestPermutations(t *testing.T) {
 	cases := []struct {
-		n, k, expected uint64
+		s, n, expected uint64
 	}{
-		{1, 1, 1},
-		{2, 1, 2},
-		{3, 2, 6},
-		{4, 2, 10},
-		{5, 3, 35},
+		{6, 1, 6},
+		{6, 2, 36},
+		{10, 3, 1000},
 	}
 	for _, c := range cases {
-		got := Multichoose(c.n, c.k)
+		got, _ := Permutations(c.s, c.n)
 		if got != c.expected {
-			t.Errorf("Multichoose(%d, %d) == %d, want %d", c.n, c.k, got, c.expected)
+			t.Errorf("Permutations(%d, %d) == %d, want %d", c.s, c.n, got, c.expected)
 		}
+
+	}
+
+	// testing error case
+	_, err := Permutations(2, 65)
+	if err == nil {
+		t.Error("Permutations(2, 65) did not result in error")
 	}
 }
 
@@ -77,7 +82,7 @@ func TestCountRollsWithTargetSum(t *testing.T) {
 		{31, 10, 6, 3393610},
 	}
 	for _, c := range cases {
-		got := CountRollsWithTargetSum(c.n, c.s, c.p)
+		got, _ := CountRollsWithTargetSum(c.n, c.s, c.p)
 		if got != c.expected {
 			t.Errorf("CountRollsWithTargetSum(%d, %d, %d) == %d, want %d", c.n, c.s, c.p, got, c.expected)
 		}
@@ -93,7 +98,7 @@ func TestCountRollsGreaterOrEqualToTargetSum(t *testing.T) {
 		{10, 2, 6, 6},
 	}
 	for _, c := range cases {
-		got := CountRollsGreaterOrEqualToTargetSum(c.n, c.s, c.p)
+		got, _ := CountRollsGreaterOrEqualToTargetSum(c.n, c.s, c.p)
 		if got != c.expected {
 			t.Errorf("CountRollsGreaterOrEqualToTargetSum(%d, %d, %d) == %d, want %d", c.n, c.s, c.p, got, c.expected)
 		}

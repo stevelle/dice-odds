@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 )
@@ -22,14 +23,18 @@ func main() {
 	fmt.Println("What are the odds?")
 }
 
-func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) uint64 {
+func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) (uint64, error) {
 	var total uint64
 	// fmt.Printf("from %d to %d\n", p, s*n)
 	for i := p; i <= s*n; i++ {
 		// fmt.Printf("CountRollsWithTargetSum(%d, %d, %d)\n", n, s, i)
-		total += CountRollsWithTargetSum(n, s, i)
+		addend, err := CountRollsWithTargetSum(n, s, i)
+		if err != nil {
+			return 0, err
+		}
+		total += addend
 	}
-	return total
+	return total, nil
 }
 
 // Probability P of getting a sum p by rolling n dice each with s sides
@@ -41,40 +46,51 @@ func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) uint64 {
 //     with credit to https://www.lucamoroni.it/the-dice-roll-sum-problem/
 // This calculation is broken down into subcalculations by functions defined below to answer the questions proposed
 
+// Count number of possible outcomes from rolling n dice, each with s sides
+func Permutations(s uint64, n uint64) (uint64, error) {
+	sides := big.NewInt(0).SetUint64(s)
+	num := big.NewInt(0).SetUint64(n)
+	permutations := big.NewInt(0).Exp(sides, num, zero)
+	if permutations.IsUint64() {
+		return permutations.Uint64(), nil
+	}
+	return 0, errors.New(fmt.Sprintf("Value %d**%d is too large for uint64", s, n))
+}
+
 // Count the number of ways to get target sum from a given number of dice, each with given sides
 //   expressed by sum[k: 0, math.Floor((p-n)/s)](math.Pow(-1, k) * Choose(n, k) * Choose((p - s * k - 1), (p - s * k - n) ))
 //   p becomes target
-func CountRollsWithTargetSum(n uint64, s uint64, p uint64) uint64 {
+func CountRollsWithTargetSum(n uint64, s uint64, p uint64) (uint64, error) {
 	var total uint64
 	k := (p - n) / s
 	for i := uint64(0); i <= k; i++ {
+		first, err := Choose(n, i)
+		if err != nil {
+			return 0, err
+		}
+		second, err := Choose(p-s*i-1, p-s*i-n)
+		if err != nil {
+			return 0, err
+		}
+
 		// we just add or subtract below since math.Pow(-1, k) is always 1 or -1
-		is_add := shouldAdd(i)
-		first := Choose(n, i)
-		second := Choose(p-s*i-1, p-s*i-n)
-		if is_add {
+		if shouldAdd(i) {
 			total += first * second
 		} else {
 			total -= first * second
 		}
 	}
-	return total
-}
-
-// Combinations with Repetitions
-//   commonly expressed "n multichoose k"
-func Multichoose(n uint64, k uint64) uint64 {
-	return Choose(n+k-1, k)
+	return total, nil
 }
 
 // Combinations without Repetitions
 //   commonly expressed "n choose k"
-func Choose(n uint64, k uint64) uint64 {
+func Choose(n uint64, k uint64) (uint64, error) {
 	if k == 1 {
-		return n
+		return n, nil
 	}
 	if k == 0 || k == n {
-		return 1
+		return 1, nil
 	}
 
 	numerator := Factorial(n)
@@ -82,7 +98,10 @@ func Choose(n uint64, k uint64) uint64 {
 
 	var result big.Int
 	result.Div(numerator, denominator)
-	return result.Uint64()
+	if result.IsUint64() {
+		return result.Uint64(), nil
+	}
+	return 0, errors.New(fmt.Sprintf("Value \"%d choose %d\" is too large for uint64", n, k))
 }
 
 // Calculate the factorial for a value
