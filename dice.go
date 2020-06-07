@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 )
 
@@ -21,6 +22,19 @@ var facts [41]big.Int
 func main() {
 
 	fmt.Println("What are the odds?")
+}
+
+func ChanceToMatchOrBeat(num_dice uint64, sides uint64, target uint64) (float64, error) {
+	numerator, err := CountRollsGreaterOrEqualToTargetSum(num_dice, sides, target)
+	if err != nil {
+		return 0, err
+	}
+	denominator, err := Permutations(sides, num_dice)
+	if err != nil {
+		return 0, err
+	}
+	result := math.Round(float64(numerator)/float64(denominator)*100.0) / 100.0
+	return result, nil
 }
 
 func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) (uint64, error) {

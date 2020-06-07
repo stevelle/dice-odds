@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"math/big"
 	"testing"
 )
@@ -103,4 +104,30 @@ func TestCountRollsGreaterOrEqualToTargetSum(t *testing.T) {
 			t.Errorf("CountRollsGreaterOrEqualToTargetSum(%d, %d, %d) == %d, want %d", c.n, c.s, c.p, got, c.expected)
 		}
 	}
+}
+
+func TestChanceToMatchOrBeat(t *testing.T) {
+	cases := []struct {
+		num, sides, target uint64
+		expected           float64
+	}{
+		{2, 6, 5, 83.33},
+		{3, 6, 10, 62.50},
+		{3, 6, 15, 9.26},
+		{4, 6, 15, 44.37},
+		{4, 5, 20, 5.4},
+	}
+	for _, c := range cases {
+		got, _ := ChanceToMatchOrBeat(c.num, c.sides, c.target)
+		if AlmostEq(got, c.expected) {
+			t.Errorf("ChanceToMatchOrBeat(%d, %d, %d) == %f, want %f", c.num, c.sides, c.target, got, c.expected)
+		}
+	}
+}
+
+// utility function
+func AlmostEq(left float64, right float64) bool {
+	tolerance := 0.001
+	diff := math.Abs(left - right)
+	return diff <= tolerance
 }
