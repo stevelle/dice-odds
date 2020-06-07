@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
 )
 
-// Combinatorics, which are featured prominently in probablility in dice
+// Combinatorics, which are featured prominently in probability in dice
 // quickly results in very large numbers, due to the presence of
 // factorials in this field of math.
 // For this reason we are performing many calculations using math/big
@@ -17,31 +18,51 @@ var zero = big.NewInt(0)
 var one = big.NewInt(1)
 
 // Dynamic Programming: Calculated values are saved to reduce duplicate effort
-var facts [41]big.Int
+var facts [100]big.Int
 
 func main() {
+	fmt.Printf("Dice,V. Easy (5),Easy (10),Moderate (15),Difficult (20),V Difficult (25),Heroic (30)\n")
+	for dice := 2; dice < 9; dice++ {
+		for pips := 0; pips < 3; pips++ {
+			fmt.Printf("%dD", dice)
+			if pips > 0 {
+				fmt.Printf("+%d", pips)
+			}
+			for target := 5; target <= 30; target += 5 {
+				chance, err := ChanceToMatchOrBeat(uint64(dice), 6, uint64(target-pips))
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				fmt.Printf(",%.2f%%", chance)
+			}
+			fmt.Println()
+		}
+	}
 
 	fmt.Println("What are the odds?")
 }
 
-func ChanceToMatchOrBeat(num_dice uint64, sides uint64, target uint64) (float64, error) {
-	numerator, err := CountRollsGreaterOrEqualToTargetSum(num_dice, sides, target)
+// Percent chance that the sum of numDice each with sides is at least target
+func ChanceToMatchOrBeat(numDice uint64, sides uint64, target uint64) (float64, error) {
+	if numDice >= target {
+		return 100.0, nil
+	}
+	numerator, err := CountRollsGreaterOrEqualToTargetSum(numDice, sides, target)
 	if err != nil {
 		return 0, err
 	}
-	denominator, err := Permutations(sides, num_dice)
+	denominator, err := Permutations(sides, numDice)
 	if err != nil {
 		return 0, err
 	}
-	result := math.Round(float64(numerator)/float64(denominator)*100.0) / 100.0
+	result := math.Round(float64(numerator)/float64(denominator)*10000.0) / 100.0
 	return result, nil
 }
 
 func CountRollsGreaterOrEqualToTargetSum(n uint64, s uint64, p uint64) (uint64, error) {
 	var total uint64
-	// fmt.Printf("from %d to %d\n", p, s*n)
 	for i := p; i <= s*n; i++ {
-		// fmt.Printf("CountRollsWithTargetSum(%d, %d, %d)\n", n, s, i)
 		addend, err := CountRollsWithTargetSum(n, s, i)
 		if err != nil {
 			return 0, err
